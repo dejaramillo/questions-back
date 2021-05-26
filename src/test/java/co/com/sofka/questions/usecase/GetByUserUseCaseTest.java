@@ -1,30 +1,29 @@
-package co.com.sofka.questions.usecases;
+package co.com.sofka.questions.usecase;
 
 import co.com.sofka.questions.collections.Question;
 import co.com.sofka.questions.model.QuestionDTO;
 import co.com.sofka.questions.reposioties.QuestionRepository;
-import co.com.sofka.questions.usecase.UpdateUseCase;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-class UpdateUseCaseTest {
+class GetByUserUseCaseTest {
 
     @MockBean
     QuestionRepository questionRepository;
 
     @SpyBean
-    UpdateUseCase updateUseCase;
+    GetByUserUseCase getByUserUseCase;
 
     @Test
-    void updateQuesttionTest(){
+    void getByUserTest(){
 
         var questionDTO = new QuestionDTO("01","u01","test?","test","test");
         var question = new Question();
@@ -33,12 +32,12 @@ class UpdateUseCaseTest {
         question.setQuestion("test?");
         question.setType("test");
         question.setCategory("test");
-        Mockito.when(questionRepository.save(Mockito.any(Question.class))).thenReturn(Mono.just(question));
-        var questionId = updateUseCase.apply(questionDTO).block();
-
-        Assertions.assertEquals(questionId,questionDTO.getId());
+        Mockito.when(questionRepository.findByUserId(questionDTO.getUserId())).thenReturn(Flux.just(question));
+        var resultQuestionDTO = getByUserUseCase.apply(questionDTO.getUserId()).collectList().block();
+        Assertions.assertEquals(resultQuestionDTO.get(0).getId(),question.getId());
+        Assertions.assertEquals(resultQuestionDTO.get(0).getQuestion(),question.getQuestion());
+        Assertions.assertEquals(resultQuestionDTO.get(0).getType(),question.getType());
 
     }
-
 
 }

@@ -17,31 +17,18 @@ public class GetAllQuestionsUseCase implements Supplier<Flux<QuestionDTO>> {
 
     private final QuestionRepository questionRepository;
     private final MapperUtils mapperUtils;
-    private final AnswerRepository answerRepository;
+
 
     public GetAllQuestionsUseCase(QuestionRepository questionRepository, MapperUtils mapperUtils, AnswerRepository answerRepository) {
         this.questionRepository = questionRepository;
         this.mapperUtils = mapperUtils;
-        this.answerRepository = answerRepository;
     }
 
     @Override
     public Flux<QuestionDTO> get() {
         return questionRepository.findAll()
-                .map(mapperUtils.mapEntityToQuestion())
-                .flatMap(allQuestionsWithListAnswers());
+                .map(mapperUtils.mapEntityToQuestion());
     }
 
-    private Function<QuestionDTO, Mono<QuestionDTO>> allQuestionsWithListAnswers(){
-        return questionDTO ->
-                Mono.just(questionDTO).zipWith(
-                        answerRepository.findAllByQuestionId(questionDTO.getId())
-                                .map(mapperUtils.mapEntityToAnswer())
-                                .collectList(),
-                        (question,answers) ->{
-                            question.setAnswers(answers);
-                            return question;
-                        }
-                );
-    }
+
 }
